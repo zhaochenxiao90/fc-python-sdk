@@ -109,6 +109,9 @@ class TestFunction(unittest.TestCase):
         with self.assertRaises(fc2.FcError):
             self.client.update_function(self.serviceName, functionName, description='invalid', headers ={'if-match':'invalid etag'})
 
+        with self.assertRaises(Exception):
+            self.client.update_function(self.serviceName, functionName, codeZipFile='test/hello_world/hello_world.zip', runtime = 10)
+
         self.assertEqual(func['description'], desc)
 
         self.client.delete_function(self.serviceName, functionName)
@@ -289,6 +292,11 @@ class TestFunction(unittest.TestCase):
             function = self.client.create_function(
                 self.serviceName, functionName,
                 handler='main.my_handler', runtime='python2.7', codeOSSBucket='test-bucket' ,  description=desc)
+
+        with self.assertRaises(Exception):
+            function = self.client.create_function(
+                self.serviceName, functionName,
+                handler='main.my_handler', runtime=10, codeZipFile='test/hello_world/hello_world.zip')
 
 
 if __name__ == '__main__':

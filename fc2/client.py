@@ -13,6 +13,7 @@ from . import fc_exceptions
 import platform
 
 
+
 class Client(object):
     def __init__(self, **kwargs):
         endpoint = kwargs.get('endpoint', None)
@@ -277,11 +278,19 @@ class Client(object):
         code_d = {}
         if codeZipFile:
             code_d['codeZipFile'] = codeZipFile
+            if not isinstance(codeZipFile,str):
+                raise Exception("codeZipFile type is string")
         if codeDir:
             code_d['codeDir'] = codeDir
+            if not isinstance(codeDir,str):
+                raise Exception("codeDir type is string")
         if codeOSSBucket:
+            if not isinstance(codeOSSBucket,str):
+                raise Exception("codeOSSBucket type is string")
             if not codeOSSObject:
                 raise Exception('codeOSSBucket and codeOSSObject must to exist at the same time')
+            if not isinstance(codeOSSObject,str):
+                raise Exception("codeOSSObject type is string")
             code_d['oss'] = (codeOSSBucket, codeOSSObject)
 
         if len(code_d) == 0:
@@ -291,6 +300,7 @@ class Client(object):
             raise Exception('codeZipFile, codeDir, (codeOSSBucket, codeOSSObject) , these three parameters need only one paramet$er assignment')
 
         return True
+
 
     def create_function(
             self, serviceName, functionName, runtime, handler,
@@ -330,6 +340,8 @@ class Client(object):
         }
         """
         self._check_function_param_valid(codeZipFile, codeDir, codeOSSBucket, codeOSSObject)
+        serviceName, functionName, runtime, handler, memorySize, timeout = \
+             str(serviceName), str(functionName), str(runtime), str(handler), int(memorySize), int(timeout)
 
         method = 'POST'
         path = '/{0}/services/{1}/functions'.format(self.api_version, serviceName)
@@ -362,7 +374,7 @@ class Client(object):
         r = self._do_request(method, path, headers, body=json.dumps(payload).encode('utf-8'))
         # 'etag' now in headers
         return FcHttpResponse(r.headers, r.json())
-
+    
     def update_function(
             self, serviceName, functionName,
             codeZipFile=None, codeDir=None, codeOSSBucket=None, codeOSSObject=None,
@@ -403,6 +415,12 @@ class Client(object):
             'timeout': 60,                // in second
         }
         """
+        serviceName, functionName = str(serviceName), str(functionName)
+        handler = str(handler) if handler else handler
+        runtime = str(runtime) if runtime else runtime
+        memorySize = int(memorySize) if memorySize else memorySize
+        timeout = int(timeout) if timeout else timeout
+
         method = 'PUT'
         path = '/{0}/services/{1}/functions/{2}'.format(self.api_version, serviceName, functionName)
         headers = self._build_common_headers(method, path, headers)
